@@ -38,8 +38,11 @@ export class PackageVerifier {
         result: VerifyPkgResult, exists: boolean,
         severity: VerifyPkgSeverity
     ) : void {
-        if ( ! exists && severity === 'error' ) result.summary.errors++;
-        if ( ! exists && severity === 'warn' ) result.summary.warnings++;
+        if ( exists || severity === 'ignore' ) return;
+        switch ( severity ) {
+            case 'error': result.summary.errors++; break;
+            case 'warn': result.summary.warnings++; break;
+        }
     }
 
     private async checkFile (
@@ -118,7 +121,6 @@ export class PackageVerifier {
 
         await traverse( sources.root );
 
-        // 1. Source files
         for ( const src of sourceFiles ) {
             const rule = rules.find( r => r.match?.includes( src ) ) ?? rules.find( r => r.default );
             if ( ! rule ) {
