@@ -93,7 +93,7 @@ export class PackageVerifier {
         }
 
         result.atLeastOne.push( { group: groupResult, valid: groupExists } );
-        if ( ! groupExists ) result.summary.errors++;
+        this.applyPolicy( result, groupExists, severity );
     }
 
     private async checkDerive ( result: VerifyPkgResult ) : Promise< void > {
