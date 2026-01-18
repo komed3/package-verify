@@ -1,6 +1,6 @@
 {
   "name": "package-verify",
-  "description": "Verifies npm builds & tarballs for existing structures and files before publishing",
+  "description": "Verify published package contents against an explicit manifest",
   "license": "MIT",
   "version": "1.0.0",
   "author": {
