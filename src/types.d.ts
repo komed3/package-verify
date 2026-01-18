@@ -57,7 +57,7 @@ export interface VerifyPkgNormalized {
     };
     expect: {
         files: { relative: string; absolute: string }[];
-        patterns: { pattern: string; resolvedBase: string }[];
+        patterns: { base: string; pattern: string, regex: RegExp }[];
         atLeastOne: { relative: string; absolute: string }[][];
     };
     derive?: {

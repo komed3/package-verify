@@ -3,17 +3,32 @@ import { resolve } from 'node:path';
 
 export class ManifestNormalizer {
 
-    private static policyLevel ( level: any = undefined, fb: VerifyPkgPolicyLevel ) : VerifyPkgPolicyLevel {
-        return [ 'error', 'warn', 'ignore' ].includes( ( level = String( level ).toLowerCase() ) ) ? level : fb;
+    private static policyLevel (
+        level: any = undefined, fb: VerifyPkgPolicyLevel
+    ) : VerifyPkgPolicyLevel {
+        return [ 'error', 'warn', 'ignore' ].includes(
+            ( level = String( level ).toLowerCase() )
+        ) ? level : fb;
     }
 
-    private static resolvePaths ( paths: string[], root: string ) : { relative: string, absolute: string }[] {
-        return paths.map( f => ( { relative: f, absolute: resolve( root, f ) } ) );
+    private static resolvePaths ( paths: string[], base: string ) : {
+        relative: string, absolute: string
+    }[] {
+        return paths.map( f => ( { relative: f, absolute: resolve( base, f ) } ) );
+    }
+
+    private static resolvePattern ( patterns: string[], base: string ) : {
+        base: string, pattern: string, regex: RegExp
+    }[] {
+        return patterns.map( p => ( { base, pattern: p, regex: new RegExp(
+            '^' + p.replace( /[.+^${}()|[\]\\]/g, '\\$&' )
+                .replace( /\*/g, '.*' )
+                .replace( /\?/g, '.' ) + '$'
+        ) } ) );
     }
 
     public static normalize (
-        manifest: VerifyPkgManifest,
-        cwd: string = process.cwd()
+        manifest: VerifyPkgManifest, cwd: string = process.cwd()
     ) : VerifyPkgNormalized {
         const packageRoot = resolve( cwd, manifest.context.packageRoot );
 
@@ -30,9 +45,7 @@ export class ManifestNormalizer {
 
         const expect: VerifyPkgNormalized[ 'expect' ] = {
             files: this.resolvePaths( manifest.expect?.files ?? [], packageRoot ),
-            patterns: ( manifest.expect?.patterns ?? [] ).map( p => ( {
-                pattern: p, resolvedBase: packageRoot
-            } ) ),
+            patterns: this.resolvePattern( manifest.expect?.patterns ?? [], packageRoot ),
             atLeastOne: ( manifest.expect?.atLeastOne ?? [] ).map( g =>
                 this.resolvePaths( g, packageRoot )
             )
