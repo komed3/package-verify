@@ -4,3 +4,5 @@ export interface VerifyPkgOptions {
 }
 
 export interface VerifyPkgManifest {}
+
+export interface VerifyPkgResult {}

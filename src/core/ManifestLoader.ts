@@ -7,7 +7,7 @@ import schema from '../../schema/package-verify.schema.json';
 
 export class ManifestLoader {
 
-    private static readonly ajv = new Ajv( { allErrors: true, strict: true } );
+    private static readonly ajv = new Ajv ( { allErrors: true, strict: true } );
 
     public static async verify ( manifest: any ) : Promise< true | Error > {
         const validate = await this.ajv.compileAsync( schema );
