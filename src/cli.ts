@@ -29,4 +29,13 @@ export async function main () : Promise< void > {
 
     const dryRun = Boolean( args[ 'dry-run' ] );
     const reportPath = args.report ? resolve( String( args.report ) ) : undefined;
+
+    let result: VerifyPkgResult;
+    try { result = await verifyPkg( options ) }
+    catch ( err ) {
+        console.error( '✖ Verification failed:' );
+        console.error( ( err as Error ).message );
+        process.exitCode = 1;
+        return;
+    }
 }
