@@ -1,4 +1,4 @@
-import { VerifyPkgNormalized, VerifyPkgPolicyLevel, VerifyPkgResult } from '../types';
+import { VerifyPkgCheckFile, VerifyPkgNormalized, VerifyPkgPolicyLevel, VerifyPkgResult } from '../types';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -29,6 +29,11 @@ export class PackageVerifier {
         if ( this.verbose ) ( console as any )[ method ]( msg );
     }
 
+    private async pathExists ( path: string ) : Promise< boolean > {
+        const test = await stat( path );
+        return test.isFile() || test.isDirectory();
+    }
+
     private applyPolicy (
         result: VerifyPkgResult, exists: boolean,
         severity: VerifyPkgPolicyLevel
@@ -41,8 +46,7 @@ export class PackageVerifier {
         result: VerifyPkgResult, f: { relative: string; absolute: string },
         severity: VerifyPkgPolicyLevel
     ) : Promise< void > {
-        const test = await stat( f.absolute );
-        const exists = test.isFile() || test.isDirectory();
+        const exists = await this.pathExists( f.absolute );
 
         this.log(
             `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`,
@@ -69,6 +73,29 @@ export class PackageVerifier {
         this.applyPolicy( result, exists, severity );
     }
 
+    private async checkGroup (
+        result: VerifyPkgResult, g: { relative: string; absolute: string }[],
+        severity: VerifyPkgPolicyLevel
+    ) : Promise< void > {
+        const groupResult: VerifyPkgCheckFile[] = [];
+        let groupExists = false;
+
+        for ( const f of g ) {
+            const exists = await this.pathExists( f.absolute );
+
+            groupResult.push( { ...f, exists, severity } );
+            groupExists = groupExists || exists;
+
+            this.log(
+                `${ exists ? '[OK]' : '[MISSING]' } (group) ${f.relative}`,
+                exists ? 'log' : 'warn'
+            );
+        }
+
+        result.atLeastOne.push( { group: groupResult, valid: groupExists } );
+        if ( ! groupExists ) result.summary.errors++;
+    }
+
     public async verify () : Promise< VerifyPkgResult > {
         const { policy, expect } = this.manifest;
         const result: VerifyPkgResult = {
@@ -84,6 +111,11 @@ export class PackageVerifier {
         // 2. Expect patterns
         for ( const p of expect.patterns ) {
             await this.checkPattern( result, p, policy.on.emptyPattern );
+        }
+
+        // 3. At least one groups
+        for ( const g of expect.atLeastOne ) {
+            await this.checkGroup( result, g, policy.on.missingExpected );
         }
 
         return result;
