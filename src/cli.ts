@@ -3,5 +3,7 @@ import type { VerifyPkgOptions, VerifyPkgResult } from './types';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const VERSION = '1.0.0';
-const DEFAULT_MANIFEST = 'verify.manifest.json';
+export const VERSION = 'v1.0.0';
+export const DEFAULT_MANIFEST = 'verify.manifest.json';
+
+export async function main () : Promise< void > {}
