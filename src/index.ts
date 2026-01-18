@@ -6,7 +6,7 @@ import type * as T from './types';
 export { ManifestLoader, ManifestNormalizer, PackageVerifier };
 export type { T };
 
-export default async function verifyPackage (
+export default async function verifyPkg (
     opt: T.VerifyPkgOptions
 ) : Promise< T.VerifyPkgResult > {
     const { manifestPath, cwd, verbose = false } = opt;
