@@ -25,8 +25,14 @@ export class PackageVerifier {
         return files;
     }
 
-    private log ( msg: string, method: keyof typeof console = 'log' ) {
+    private log ( msg: string, method: keyof typeof console = 'log' ) : void {
         if ( this.verbose ) ( console as any )[ method ]( msg );
+    }
+
+    private logCheck ( exists: boolean, msg: string, severity: VerifyPkgSeverity = 'warn' ) : void {
+        this.log( `${ exists ? '[OK]' : '[MISSING]' } ${msg}`,
+            exists ? 'log' : severity === 'error' ? 'error' : 'warn'
+        );
     }
 
     private async pathExists ( path: string ) : Promise< boolean > {
@@ -51,10 +57,7 @@ export class PackageVerifier {
     ) : Promise< void > {
         const exists = await this.pathExists( f.absolute );
 
-        this.log(
-            `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`,
-            exists ? 'log' : 'warn'
-        );
+        this.logCheck( exists, f.relative, severity );
 
         result.files.push( { ...f, exists, severity } );
         this.applyPolicy( result, exists, severity );
@@ -67,10 +70,7 @@ export class PackageVerifier {
         const matches = ( await this.glob( p.base ) ).filter( f => p.regex.test( f ) );
         const exists = matches.length > 0;
 
-        this.log(
-            `${ exists ? '[OK]' : '[MISSING]' } pattern: ${p.pattern} -> ${ matches.join( ', ' ) }`,
-            exists ? 'log' : 'warn'
-        );
+        this.logCheck( exists, `pattern: ${p.pattern} -> ${ matches.join( ', ' ) }`, severity );
 
         result.patterns.push( { ...p, exists, matches } );
         this.applyPolicy( result, exists, severity );
@@ -89,10 +89,7 @@ export class PackageVerifier {
             groupResult.push( { ...f, exists, severity } );
             groupExists = groupExists || exists;
 
-            this.log(
-                `${ exists ? '[OK]' : '[MISSING]' } (group) ${f.relative}`,
-                exists ? 'log' : 'warn'
-            );
+            this.logCheck( exists, `(group) ${f.relative}`, severity );
         }
 
         result.atLeastOne.push( { group: groupResult, valid: groupExists } );
@@ -147,10 +144,7 @@ export class PackageVerifier {
                 const absTarget = join( packageRoot, relTarget );
                 const exists = await this.pathExists( absTarget );
 
-                this.log(
-                    `${ exists ? '[OK]' : '[MISSING]' } (derive: ${mode}) ${relTarget}`,
-                    exists ? 'log' : 'warn'
-                );
+                this.logCheck( exists, `(derive: ${mode}) ${relTarget}`, severity );
 
                 result.derive.push( { mode, target: relTarget, absolute: absTarget, exists } );
                 this.applyPolicy( result, exists, severity );
