@@ -38,4 +38,6 @@ export async function main () : Promise< void > {
         process.exitCode = 1;
         return;
     }
+
+    if ( reportPath ) await writeFile( reportPath, JSON.stringify( result, null, 2 ), 'utf8' );
 }
