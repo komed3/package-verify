@@ -15,7 +15,7 @@ export class ManifestNormalizer {
 
         const policy: VerifyPkgNormalized[ 'policy' ] = {
             defaultSeverity: this.policyLevel( manifest.policy?.defaultSeverity, 'error' ),
-            failOnWarnings: manifest.policy?.failOnWarnings ?? false,
+            failOnWarnings: !! ( manifest.policy?.failOnWarnings ?? false ),
             unexpectedFiles: this.policyLevel( manifest.policy?.unexpectedFiles, 'warn' ),
             on: {
                 missingExpected: this.policyLevel( manifest.policy?.on?.missingExpected, 'error' ),
@@ -24,7 +24,21 @@ export class ManifestNormalizer {
             }
         };
 
-        return { packageRoot, policy };
+        const expect: VerifyPkgNormalized[ 'expect' ] = {
+            files: ( manifest.expect?.files ?? [] ).map( f => ( {
+                relative: f, absolute: resolve( packageRoot, f )
+            } ) ),
+            patterns: ( manifest.expect?.patterns ?? [] ).map( p => ( {
+                pattern: p, resolvedBase: packageRoot
+            } ) ),
+            atLeastOne: ( manifest.expect?.atLeastOne ?? [] ).map( g =>
+                g.map( f => ( {
+                    relative: f, absolute: resolve( packageRoot, f )
+                } ) )
+            )
+        };
+
+        return { packageRoot, policy, expect };
     }
 
 }
