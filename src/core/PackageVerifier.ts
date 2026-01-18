@@ -30,8 +30,8 @@ export class PackageVerifier {
     }
 
     private async pathExists ( path: string ) : Promise< boolean > {
-        const test = await stat( path );
-        return test.isFile() || test.isDirectory();
+        try { const s = await stat( path ); return s.isFile() || s.isDirectory() }
+        catch { return false }
     }
 
     private applyPolicy (
@@ -108,10 +108,11 @@ export class PackageVerifier {
         const traverse = async ( dir: string ) => {
             for ( const e of await readdir( dir, { withFileTypes: true } ) ) {
                 const fullPath = join( dir, e.name );
-                e.isDirectory() ? await traverse( fullPath ) : 
-                    includeRegex.test( relative( sources.root, fullPath ) ) && 
-                    ! exclude.some( ex => relative( sources.root, fullPath ).startsWith( ex ) ) && 
-                    sourceFiles.push( relative( sources.root, fullPath ) );
+                const rel = relative( sources.root, fullPath );
+
+                e.isDirectory() ? await traverse( fullPath ) : includeRegex.test( rel ) &&
+                    ! exclude.some( ex => rel === ex || rel.startsWith( ex + '/' ) ) &&
+                    sourceFiles.push( rel );
             }
         };
 
