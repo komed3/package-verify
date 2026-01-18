@@ -96,8 +96,12 @@ export class PackageVerifier {
         if ( ! groupExists ) result.summary.errors++;
     }
 
+    private async checkDerive (
+        result: VerifyPkgResult, derive: VerifyPkgNormalized[ 'derive' ]
+    ) : Promise< void > {}
+
     public async verify () : Promise< VerifyPkgResult > {
-        const { policy, expect } = this.manifest;
+        const { policy, expect, derive } = this.manifest;
         const result: VerifyPkgResult = {
             files: [], patterns: [], atLeastOne: [], derive: [],
             summary: { errors: 0, warnings: 0 }
@@ -117,6 +121,9 @@ export class PackageVerifier {
         for ( const g of expect.atLeastOne ) {
             await this.checkGroup( result, g, policy.on.missingExpected );
         }
+
+        // 4. Check derive
+        await this.checkDerive( result, derive );
 
         return result;
     }
