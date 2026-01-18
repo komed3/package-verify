@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/komed3/package-verify/master/schema/package-verify.schema.json",
+  "title": "Package Verify Manifest",
+  "description": "Manifest definition for verifying published npm packages against expected build outputs.",
+  "type": "object",
+  "version": "1.0",
+  "required": [ "meta", "context", "policy", "expect" ],
+  "additionalProperties": false,
+
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": [ "manifestVersion" ],
+      "additionalProperties": false,
+      "properties": {
+        "manifestVersion": {
+          "type": "integer",
+          "const": 1
+        }
+      }
+    },
+
+    "context": {
+      "type": "object",
+      "required": [ "packageRoot" ],
+      "additionalProperties": false,
+      "properties": {
+        "packageRoot": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+
+    "policy": {
+      "type": "object",
+      "required": [ "defaultSeverity" ],
+      "additionalProperties": false,
+      "properties": {
+        "defaultSeverity": {
+          "type": "string",
+          "enum": [ "error", "warn", "ignore" ]
+        },
+
+        "failOnWarnings": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "unexpectedFiles": {
+          "type": "string",
+          "enum": [ "error", "warn", "ignore" ]
+        },
+
+        "on": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "missingExpected": {
+              "type": "string",
+              "enum": [ "error", "warn", "ignore" ]
+            },
+            "emptyPattern": {
+              "type": "string",
+              "enum": [ "error", "warn", "ignore" ]
+            },
+            "deriveFailure": {
+              "type": "string",
+              "enum": [ "error", "warn", "ignore" ]
+            }
+          }
+        }
+      }
+    },
+
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+
+        "patterns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+
+        "atLeastOne": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+
+    "derive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "sources", "rules", "targets" ],
+      "properties": {
+        "sources": {
+          "type": "object",
+          "required": [ "root", "include" ],
+          "additionalProperties": false,
+          "properties": {
+            "root": {
+              "type": "string",
+              "minLength": 1
+            },
+            "include": {
+              "type": "string",
+              "minLength": 1
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "match": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "mode": {
+                "type": "string"
+              }
+            },
+            "required": [ "mode" ],
+            "oneOf": [
+              { "required": [ "match" ] },
+              { "required": [ "default" ] }
+            ]
+          }
+        },
+
+        "targets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
