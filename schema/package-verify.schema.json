@@ -43,11 +43,6 @@
           "enum": [ "error", "warn", "ignore" ]
         },
 
-        "failOnWarnings": {
-          "type": "boolean",
-          "default": false
-        },
-
         "unexpectedFiles": {
           "type": "string",
           "enum": [ "error", "warn", "ignore" ]
