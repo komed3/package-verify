@@ -71,4 +71,41 @@ export interface VerifyPkgNormalized {
     };
 }
 
-export interface VerifyPkgResult {}
+export interface VerifyPkgCheckFile {
+    relative: string;
+    absolute: string;
+    exists: boolean;
+    severity?: VerifyPkgPolicyLevel;
+}
+
+export interface VerifyPkgCheckPattern {
+    pattern: string;
+    resolvedBase: string;
+    exists: boolean;
+    matches: string[];
+}
+
+export interface VerifyPkgCheckAtLeastOne {
+    group: VerifyPkgCheckFile[];
+    valid: boolean;
+}
+
+export interface VerifyPkgCheckDerive {
+    name: string;
+    target: string;
+    absolute: string;
+    exists: boolean;
+}
+
+export interface VerifyPkgCheckSummary {
+    errors: number;
+    warnings: number;
+}
+
+export interface VerifyPkgResult {
+    files: VerifyPkgCheckFile[];
+    patterns: VerifyPkgCheckPattern[];
+    atLeastOne: VerifyPkgCheckAtLeastOne[];
+    derive: VerifyPkgCheckDerive[];
+    summary: VerifyPkgCheckSummary;
+}
