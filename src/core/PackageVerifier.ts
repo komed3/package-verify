@@ -1,8 +1,5 @@
-import {
-    VerifyPkgCheckFile, VerifyPkgNormalized, VerifyPkgPolicyLevel, VerifyPkgResult
-} from '../types';
-
-import { readdir } from 'node:fs/promises';
+import { VerifyPkgNormalized, VerifyPkgPolicyLevel, VerifyPkgResult } from '../types';
+import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 export class PackageVerifier {
@@ -24,6 +21,19 @@ export class PackageVerifier {
         ]++;
 
         return result;
+    }
+
+    private async checkFile (
+        result: VerifyPkgResult, f: { relative: string; absolute: string },
+        severity: VerifyPkgPolicyLevel
+    ) : Promise< VerifyPkgResult > {
+        const test = await stat( f.absolute );
+        const exists = test.isFile() || test.isDirectory();
+
+        this.log( `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`, exists ? 'log' : 'warn' );
+
+        result.files.push( { ...f, exists, severity } );
+        return this.applyPolicy( result, exists, severity );
     }
 
     private async glob ( base: string, regex: RegExp ) : Promise< string[] > {
