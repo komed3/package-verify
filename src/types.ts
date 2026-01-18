@@ -3,6 +3,7 @@ export type VerifyPkgSeverity = 'error' | 'warn' | 'ignore';
 export interface VerifyPkgOptions {
     manifestPath: string;
     cwd?: string;
+    failOnWarnings?: boolean;
     verbose?: boolean;
 }
 

@@ -25,8 +25,10 @@ const printSummary = ( result: VerifyPkgResult ) : void => {
     if ( warnings > 0 ) console.warn( `⚠ ${warnings} warning${ warnings === 1 ? '' : 's' } found` );
 }
 
-const applyExitCode = ( result: VerifyPkgResult ) : void => {
-    process.exitCode = result.summary.errors > 0 ? 1 : 0;
+const applyExitCode = ( result: VerifyPkgResult, failOnWarnings: boolean = false ) : void => {
+    process.exitCode = result.summary.errors > 0 || (
+        failOnWarnings && result.summary.warnings > 0
+    ) ? 1 : 0;
 }
 
 export async function main () : Promise< void > {
@@ -40,6 +42,7 @@ export async function main () : Promise< void > {
     const options: VerifyPkgOptions = {
         manifestPath: resolve( String( args.manifest ?? DEFAULT_MANIFEST ) ),
         cwd: args.cwd ? resolve( String( args.cwd ) ) : undefined,
+        failOnWarnings: Boolean( args[ 'fail-on-warn' ] ),
         verbose: Boolean( args.verbose )
     };
 
@@ -58,5 +61,5 @@ export async function main () : Promise< void > {
     printSummary( result );
 
     if ( reportPath ) await writeFile( reportPath, JSON.stringify( result, null, 2 ), 'utf8' );
-    if ( ! dryRun ) applyExitCode( result );
+    if ( ! dryRun ) applyExitCode( result, options.failOnWarnings );
 }
