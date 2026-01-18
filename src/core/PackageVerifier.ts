@@ -29,7 +29,7 @@ export class PackageVerifier {
         if ( this.verbose ) ( console as any )[ method ]( msg );
     }
 
-    private logCheck ( exists: boolean, msg: string, severity: VerifyPkgSeverity = 'warn' ) : void {
+    private logCheck ( exists: boolean, msg: string, severity: VerifyPkgSeverity ) : void {
         this.log( `${ exists ? '[OK]' : '[MISSING]' } ${msg}`,
             exists ? 'log' : severity === 'error' ? 'error' : 'warn'
         );
