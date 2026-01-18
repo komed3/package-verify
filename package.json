@@ -1,0 +1,24 @@
+{
+  "name": "package-verify",
+  "description": "Verifies npm builds & tarballs for existing structures and files before publishing",
+  "license": "MIT",
+  "version": "1.0.0",
+  "author": {
+    "name": "komed3 (Paul Köhler)",
+    "email": "webmaster@komed3.de",
+    "url": "https://komed3.de"
+  },
+  "homepage": "https://github.com/komed3/package-verify",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/komed3/package-verify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/komed3/package-verify/issues"
+  },
+  "files": [],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
