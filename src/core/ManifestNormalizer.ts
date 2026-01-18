@@ -7,6 +7,10 @@ export class ManifestNormalizer {
         return [ 'error', 'warn', 'ignore' ].includes( ( level = String( level ).toLowerCase() ) ) ? level : fb;
     }
 
+    private static resolvePaths ( paths: string[], root: string ) : { relative: string, absolute: string }[] {
+        return paths.map( f => ( { relative: f, absolute: resolve( root, f ) } ) );
+    }
+
     public static normalize (
         manifest: VerifyPkgManifest,
         cwd: string = process.cwd()
@@ -25,16 +29,12 @@ export class ManifestNormalizer {
         };
 
         const expect: VerifyPkgNormalized[ 'expect' ] = {
-            files: ( manifest.expect?.files ?? [] ).map( f => ( {
-                relative: f, absolute: resolve( packageRoot, f )
-            } ) ),
+            files: this.resolvePaths( manifest.expect?.files ?? [], packageRoot ),
             patterns: ( manifest.expect?.patterns ?? [] ).map( p => ( {
                 pattern: p, resolvedBase: packageRoot
             } ) ),
             atLeastOne: ( manifest.expect?.atLeastOne ?? [] ).map( g =>
-                g.map( f => ( {
-                    relative: f, absolute: resolve( packageRoot, f )
-                } ) )
+                this.resolvePaths( g, packageRoot )
             )
         };
 
