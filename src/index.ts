@@ -10,6 +10,7 @@ export default async function verifyPackage ( opt: VerifyPkgOptions ) : Promise<
     const normalized = ManifestNormalizer.normalize( manifest, cwd );
 
     const verifier = new PackageVerifier ( normalized, verbose );
+    const result = await verifier.verify();
 
-    return {};
+    return result;
 }
