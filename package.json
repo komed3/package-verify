@@ -9,7 +9,16 @@
     "url": "https://komed3.de"
   },
   "homepage": "https://github.com/komed3/package-verify",
-  "keywords": [],
+  "keywords": [
+    "package",
+    "verify",
+    "manifest",
+    "npm",
+    "publish",
+    "ci",
+    "integrity",
+    "validation"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/komed3/package-verify.git"
@@ -17,9 +26,30 @@
   "bugs": {
     "url": "https://github.com/komed3/package-verify/issues"
   },
-  "files": [],
+  "files": [
+    "bin",
+    "schema",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "verify-pkg": "bin/verifyPkg.js"
+  },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "ajv": "^8.17.1"
