@@ -15,7 +15,6 @@ export interface VerifyPkgManifest {
     };
     policy: {
         defaultSeverity: VerifyPkgSeverity;
-        failOnWarnings?: boolean;
         unexpectedFiles?: VerifyPkgSeverity;
         on?: {
             missingExpected?: VerifyPkgSeverity;
@@ -47,7 +46,6 @@ export interface VerifyPkgNormalized {
     packageRoot: string;
     policy: {
         defaultSeverity: VerifyPkgSeverity;
-        failOnWarnings: boolean;
         unexpectedFiles: VerifyPkgSeverity;
         on: {
             missingExpected: VerifyPkgSeverity;

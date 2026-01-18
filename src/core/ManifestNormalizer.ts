@@ -34,7 +34,6 @@ export class ManifestNormalizer {
 
         const policy: VerifyPkgNormalized[ 'policy' ] = {
             defaultSeverity: this.policyLevel( manifest.policy?.defaultSeverity, 'error' ),
-            failOnWarnings: !! ( manifest.policy?.failOnWarnings ?? false ),
             unexpectedFiles: this.policyLevel( manifest.policy?.unexpectedFiles, 'warn' ),
             on: {
                 missingExpected: this.policyLevel( manifest.policy?.on?.missingExpected, 'error' ),
