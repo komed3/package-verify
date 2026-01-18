@@ -5,16 +5,24 @@ import Ajv from 'ajv';
 
 export class ManifestLoader {
 
-    private readonly ajv = new Ajv( { allErrors: true, strict: true } );
+    private static readonly ajv = new Ajv( { allErrors: true, strict: true } );
 
-    public async load ( path: string ) : Promise< any > {
+    public static async verify ( manifest: any ) : Promise< true | Error > {
+        const validate = await this.ajv.compileAsync( schema );
+
+        if ( ! validate( manifest ) ) return new Error (
+            `Invalid manifest:\n${ this.ajv.errorsText( validate.errors, { separator: '\n' } ) }`
+        );
+
+        return true;
+    }
+
+    public static async load ( path: string ) : Promise< any > {
         const raw = await readFile( join( process.cwd(), path ), 'utf8' );
         const manifest = JSON.parse( raw );
 
-        const validate = await this.ajv.compileAsync( schema );
-        if ( ! validate( manifest ) ) throw new Error (
-            `Invalid manifest:\n${ this.ajv.errorsText( validate.errors, { separator: '\n' } ) }`
-        );
+        const verify = await this.verify( manifest );
+        if ( verify instanceof Error ) throw verify;
 
         return manifest;
     }
