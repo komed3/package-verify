@@ -1,7 +1,9 @@
-import schema from '../../schema/package-verify.schema.json';
+import { VerifyPkgManifest } from '../types';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import Ajv from 'ajv';
+
+import schema from '../../schema/package-verify.schema.json';
 
 export class ManifestLoader {
 
@@ -17,7 +19,7 @@ export class ManifestLoader {
         return true;
     }
 
-    public static async load ( path: string ) : Promise< any > {
+    public static async load ( path: string ) : Promise< VerifyPkgManifest > {
         const raw = await readFile( join( process.cwd(), path ), 'utf8' );
         const manifest = JSON.parse( raw );
 
