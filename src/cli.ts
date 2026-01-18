@@ -20,4 +20,13 @@ export async function main () : Promise< void > {
         console.log( VERSION );
         return;
     }
+
+    const options: VerifyPkgOptions = {
+        manifestPath: resolve( String( args.manifest ?? DEFAULT_MANIFEST ) ),
+        cwd: args.cwd ? resolve( String( args.cwd ) ) : undefined,
+        verbose: Boolean( args.verbose )
+    };
+
+    const dryRun = Boolean( args[ 'dry-run' ] );
+    const reportPath = args.report ? resolve( String( args.report ) ) : undefined;
 }
