@@ -158,30 +158,49 @@ export class PackageVerifier {
         }
     }
 
+    private collectAllowedFiles ( result: VerifyPkgResult ) : Set< string > {
+        const allowed: Set< string > = new Set ();
+
+        result.files.forEach( f => f.exists && allowed.add( f.relative ) );
+        result.patterns.forEach( p => p.matches.forEach( m => allowed.add( m ) ) );
+        result.atLeastOne.forEach( g => g.group.forEach( f => f.exists && allowed.add( f.relative ) ) );
+        result.derive.forEach( d => d.exists && allowed.add( d.target ) );
+
+        return allowed;
+    }
+
+    private async checkUnexpected ( result: VerifyPkgResult ) : Promise< void > {
+        const { packageRoot, policy: { unexpectedFiles: severity } } = this.manifest;
+
+        if ( severity === 'ignore' ) return;
+
+        const allowed = this.collectAllowedFiles( result );
+        const allFiles = await this.glob( packageRoot );
+
+        for ( const f of allFiles ) {
+            if ( allowed.has( f ) ) continue;
+            const abs = join( packageRoot, f );
+
+            this.log( `[UNEXPECTED] ${f}`, severity === 'error' ? 'error' : 'warn' );
+
+            result.unexpected.push( { relative: f, absolute: abs, severity } );
+            this.applyPolicy( result, false, severity );
+        }
+    }
+
     public async verify () : Promise< VerifyPkgResult > {
-        const { policy, expect } = this.manifest;
+        const { policy: { on: { missingExpected, emptyPattern } }, expect } = this.manifest;
         const result: VerifyPkgResult = {
-            files: [], patterns: [], atLeastOne: [], derive: [],
+            files: [], patterns: [], atLeastOne: [], derive: [], unexpected: [],
             summary: { errors: 0, warnings: 0 }
         };
 
-        // 1. Expect files
-        for ( const f of expect.files ) {
-            await this.checkFile( result, f, policy.on.missingExpected );
-        }
+        for ( const f of expect.files ) await this.checkFile( result, f, missingExpected );
+        for ( const p of expect.patterns ) await this.checkPattern( result, p, emptyPattern );
+        for ( const g of expect.atLeastOne ) await this.checkGroup( result, g, missingExpected );
 
-        // 2. Expect patterns
-        for ( const p of expect.patterns ) {
-            await this.checkPattern( result, p, policy.on.emptyPattern );
-        }
-
-        // 3. At least one groups
-        for ( const g of expect.atLeastOne ) {
-            await this.checkGroup( result, g, policy.on.missingExpected );
-        }
-
-        // 4. Check derive
         await this.checkDerive( result );
+        await this.checkUnexpected( result );
 
         return result;
     }

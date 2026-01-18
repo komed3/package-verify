@@ -98,6 +98,12 @@ export interface VerifyPkgCheckDerive {
     exists: boolean;
 }
 
+export interface VerifyPkgCheckUnexpected {
+    relative: string;
+    absolute: string;
+    severity: VerifyPkgSeverity;
+}
+
 export interface VerifyPkgCheckSummary {
     errors: number;
     warnings: number;
@@ -108,5 +114,6 @@ export interface VerifyPkgResult {
     patterns: VerifyPkgCheckPattern[];
     atLeastOne: VerifyPkgCheckAtLeastOne[];
     derive: VerifyPkgCheckDerive[];
+    unexpected: VerifyPkgCheckUnexpected[];
     summary: VerifyPkgCheckSummary;
 }
