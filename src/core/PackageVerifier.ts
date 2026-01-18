@@ -44,9 +44,28 @@ export class PackageVerifier {
         const test = await stat( f.absolute );
         const exists = test.isFile() || test.isDirectory();
 
-        this.log( `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`, exists ? 'log' : 'warn' );
+        this.log(
+            `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`,
+            exists ? 'log' : 'warn'
+        );
 
         result.files.push( { ...f, exists, severity } );
+        this.applyPolicy( result, exists, severity );
+    }
+
+    private async checkPattern (
+        result: VerifyPkgResult, p: { base: string; pattern: string; regex: RegExp; },
+        severity: VerifyPkgPolicyLevel
+    ) : Promise< void > {
+        const matches = await this.glob( p.base, p.regex );
+        const exists = matches.length > 0;
+
+        this.log(
+            `${ exists ? '[OK]' : '[MISSING]' } pattern: ${p.pattern} -> ${ matches.join( ', ' ) }`,
+            exists ? 'log' : 'warn'
+        );
+
+        result.patterns.push( { ...p, exists, matches } );
         this.applyPolicy( result, exists, severity );
     }
 
@@ -58,7 +77,14 @@ export class PackageVerifier {
         };
 
         // 1. Expect files
-        for ( const f of expect.files ) await this.checkFile( result, f, policy.on.missingExpected );
+        for ( const f of expect.files ) {
+            await this.checkFile( result, f, policy.on.missingExpected );
+        }
+
+        // 2. Expect patterns
+        for ( const p of expect.patterns ) {
+            await this.checkPattern( result, p, policy.on.emptyPattern );
+        }
 
         return result;
     }
