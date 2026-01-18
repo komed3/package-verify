@@ -79,8 +79,9 @@ export interface VerifyPkgCheckFile {
 }
 
 export interface VerifyPkgCheckPattern {
+    base: string;
     pattern: string;
-    resolvedBase: string;
+    regex: RegExp;
     exists: boolean;
     matches: string[];
 }
