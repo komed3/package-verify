@@ -9,33 +9,6 @@ export class PackageVerifier {
         private readonly verbose: boolean
     ) {}
 
-    private log ( msg: string, method: keyof typeof console = 'log' ) {
-        if ( this.verbose ) ( console as any )[ method ]( msg );
-    }
-
-    private applyPolicy (
-        result: VerifyPkgResult, exists: boolean, severity: VerifyPkgPolicyLevel
-    ) : VerifyPkgResult {
-        if ( ! exists && severity !== 'ignore' ) result.summary[
-            severity === 'error' ? 'errors' : 'warnings'
-        ]++;
-
-        return result;
-    }
-
-    private async checkFile (
-        result: VerifyPkgResult, f: { relative: string; absolute: string },
-        severity: VerifyPkgPolicyLevel
-    ) : Promise< VerifyPkgResult > {
-        const test = await stat( f.absolute );
-        const exists = test.isFile() || test.isDirectory();
-
-        this.log( `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`, exists ? 'log' : 'warn' );
-
-        result.files.push( { ...f, exists, severity } );
-        return this.applyPolicy( result, exists, severity );
-    }
-
     private async glob ( base: string, regex: RegExp ) : Promise< string[] > {
         const files: string[] = [];
 
@@ -52,11 +25,40 @@ export class PackageVerifier {
         return files.filter( f => regex.test( f ) );
     }
 
+    private log ( msg: string, method: keyof typeof console = 'log' ) {
+        if ( this.verbose ) ( console as any )[ method ]( msg );
+    }
+
+    private applyPolicy (
+        result: VerifyPkgResult, exists: boolean,
+        severity: VerifyPkgPolicyLevel
+    ) : void {
+        if ( ! exists && severity === 'error' ) result.summary.errors++;
+        if ( ! exists && severity === 'warn' ) result.summary.warnings++;
+    }
+
+    private async checkFile (
+        result: VerifyPkgResult, f: { relative: string; absolute: string },
+        severity: VerifyPkgPolicyLevel
+    ) : Promise< void > {
+        const test = await stat( f.absolute );
+        const exists = test.isFile() || test.isDirectory();
+
+        this.log( `${ exists ? '[OK]' : '[MISSING]' } ${ f.relative }`, exists ? 'log' : 'warn' );
+
+        result.files.push( { ...f, exists, severity } );
+        this.applyPolicy( result, exists, severity );
+    }
+
     public async verify () : Promise< VerifyPkgResult > {
+        const { policy, expect } = this.manifest;
         const result: VerifyPkgResult = {
             files: [], patterns: [], atLeastOne: [], derive: [],
             summary: { errors: 0, warnings: 0 }
         };
+
+        // 1. Expect files
+        for ( const f of expect.files ) await this.checkFile( result, f, policy.on.missingExpected );
 
         return result;
     }
