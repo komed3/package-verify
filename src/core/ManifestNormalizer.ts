@@ -38,7 +38,21 @@ export class ManifestNormalizer {
             )
         };
 
-        return { packageRoot, policy, expect };
+        const derive: VerifyPkgNormalized[ 'derive' ] = manifest.derive ? {
+            sources: {
+                root: resolve( cwd, manifest.derive.sources.root ),
+                include: manifest.derive.sources.include,
+                exclude: manifest.derive.sources.exclude ?? []
+            },
+            rules: manifest.derive.rules.map( r => ( {
+                match: r.match ?? [],
+                default: r.default ?? false,
+                mode: r.mode
+            } ) ),
+            targets: manifest.derive.targets
+        } : undefined;
+
+        return { packageRoot, policy, expect, derive };
     }
 
 }
