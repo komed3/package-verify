@@ -3,8 +3,9 @@ import { ManifestNormalizer } from './core/ManifestNormalizer';
 import { VerifyPkgOptions, VerifyPkgResult } from './types';
 
 export default async function verifyPackage ( opt: VerifyPkgOptions ) : Promise< VerifyPkgResult > {
-    const manifest = await ManifestLoader.load( opt.manifestPath );
-    const normalized = ManifestNormalizer.normalize( manifest, opt.cwd );
+    const { manifestPath, cwd, verbose = false } = opt;
+    const manifest = await ManifestLoader.load( manifestPath );
+    const normalized = ManifestNormalizer.normalize( manifest, cwd );
 
     return {};
 }
