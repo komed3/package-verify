@@ -96,12 +96,67 @@ export class PackageVerifier {
         if ( ! groupExists ) result.summary.errors++;
     }
 
-    private async checkDerive (
-        result: VerifyPkgResult, derive: VerifyPkgNormalized[ 'derive' ]
-    ) : Promise< void > {}
+    private async checkDerive ( result: VerifyPkgResult ) : Promise< void > {
+        const { packageRoot, policy: { on: { deriveFailure: severity } }, derive } = this.manifest;
+        if ( ! derive ) return;
+
+        const { sources, rules, targets } = derive;
+        const sourceFiles: string[] = [];
+        const includeRegex = new RegExp( sources.include );
+        const exclude = sources.exclude ?? [];
+
+        const traverse = async ( dir: string ) => {
+            for ( const e of await readdir( dir, { withFileTypes: true } ) ) {
+                const fullPath = join( dir, e.name );
+                e.isDirectory() ? await traverse( fullPath ) : 
+                    includeRegex.test( relative( sources.root, fullPath ) ) && 
+                    ! exclude.some( ex => relative( sources.root, fullPath ).startsWith( ex ) ) && 
+                    sourceFiles.push( relative( sources.root, fullPath ) );
+            }
+        };
+
+        await traverse( sources.root );
+
+        // 1. Source files
+        for ( const src of sourceFiles ) {
+            const rule = rules.find( r => r.match?.includes( src ) ) ?? rules.find( r => r.default );
+            if ( ! rule ) {
+                this.log( `[DERIVE] no rule for ${src}`, severity === 'error' ? 'error' : 'warn' );
+                this.applyPolicy( result, false, severity );
+                continue;
+            }
+
+            const { mode } = rule, templates = targets[ mode ];
+            if ( ! templates ) {
+                this.log( `[DERIVE] no targets for mode "${mode}" (${src})`, 'warn' );
+                this.applyPolicy( result, false, severity );
+                continue;
+            }
+
+            const [ dir, name, ext ] = [
+                src.includes( '/' ) ? src.substring( 0, src.lastIndexOf( '/' ) ) : '',
+                src.replace( /^.*\//, '' ).replace( /\.[^.]+$/, '' ),
+                src.split('.').pop() ?? ''
+            ];
+
+            for ( const tpl of templates ) {
+                const relTarget = tpl.replace( '{dir}', dir ).replace( '{name}', name ).replace( '{ext}', ext );
+                const absTarget = join( packageRoot, relTarget );
+                const exists = await this.pathExists( absTarget );
+
+                this.log(
+                    `${ exists ? '[OK]' : '[MISSING]' } (derive: ${mode}) ${relTarget}`,
+                    exists ? 'log' : 'warn'
+                );
+
+                result.derive.push( { mode, target: relTarget, absolute: absTarget, exists } );
+                this.applyPolicy( result, exists, severity );
+            }
+        }
+    }
 
     public async verify () : Promise< VerifyPkgResult > {
-        const { policy, expect, derive } = this.manifest;
+        const { policy, expect } = this.manifest;
         const result: VerifyPkgResult = {
             files: [], patterns: [], atLeastOne: [], derive: [],
             summary: { errors: 0, warnings: 0 }
@@ -123,7 +178,7 @@ export class PackageVerifier {
         }
 
         // 4. Check derive
-        await this.checkDerive( result, derive );
+        await this.checkDerive( result );
 
         return result;
     }
