@@ -42,4 +42,32 @@ export interface VerifyPkgManifest {
     };
 }
 
+export interface VerifyPkgNormalized {
+    packageRoot: string;
+    policy: {
+        defaultSeverity: VerifyPkgPolicyLevel;
+        failOnWarnings: boolean;
+        unexpectedFiles: VerifyPkgPolicyLevel;
+        on: {
+            missingExpected: VerifyPkgPolicyLevel;
+            emptyPattern: VerifyPkgPolicyLevel;
+            deriveFailure: VerifyPkgPolicyLevel;
+        };
+    };
+    expect: {
+        files: { relative: string; absolute: string }[];
+        patterns: { pattern: string; resolvedBase: string }[];
+        atLeastOne: { relative: string; absolute: string }[][];
+    };
+    derive?: {
+        sources: {
+            root: string;
+            include: string;
+            exclude: string[];
+        };
+        rules: { match: string[]; default: boolean; mode: string }[];
+        targets: Record< string, string[] >;
+    };
+}
+
 export interface VerifyPkgResult {}
