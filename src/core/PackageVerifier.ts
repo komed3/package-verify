@@ -9,6 +9,10 @@ export class PackageVerifier {
         private readonly verbose: boolean
     ) {}
 
+    private log ( msg: string, method: keyof typeof console = 'log' ) {
+        if ( this.verbose ) ( console as any )[ method ]( msg );
+    }
+
     private async glob ( base: string, regex: RegExp ) : Promise< string[] > {
         const files: string[] = [];
 
@@ -26,7 +30,12 @@ export class PackageVerifier {
     }
 
     public async verify () : Promise< VerifyPkgResult > {
-        return {};
+        const result: VerifyPkgResult = {
+            files: [], patterns: [], atLeastOne: [], derive: [],
+            summary: { errors: 0, warnings: 0 }
+        };
+
+        return result;
     }
 
 }
