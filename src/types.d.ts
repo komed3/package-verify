@@ -92,7 +92,7 @@ export interface VerifyPkgCheckAtLeastOne {
 }
 
 export interface VerifyPkgCheckDerive {
-    name: string;
+    mode: string;
     target: string;
     absolute: string;
     exists: boolean;
