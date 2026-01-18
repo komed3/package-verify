@@ -9,7 +9,7 @@ export class PackageVerifier {
         private readonly verbose: boolean
     ) {}
 
-    private async glob ( base: string, regex: RegExp ) : Promise< string[] > {
+    private async glob ( base: string ) : Promise< string[] > {
         const files: string[] = [];
 
         const traverse = async ( dir: string ) => {
@@ -22,7 +22,7 @@ export class PackageVerifier {
         };
 
         await traverse( base );
-        return files.filter( f => regex.test( f ) );
+        return files;
     }
 
     private log ( msg: string, method: keyof typeof console = 'log' ) {
@@ -64,7 +64,7 @@ export class PackageVerifier {
         result: VerifyPkgResult, p: { base: string; pattern: string; regex: RegExp; },
         severity: VerifyPkgSeverity
     ) : Promise< void > {
-        const matches = await this.glob( p.base, p.regex );
+        const matches = ( await this.glob( p.base ) ).filter( f => p.regex.test( f ) );
         const exists = matches.length > 0;
 
         this.log(
