@@ -2,6 +2,7 @@ export type VerifyPkgPolicyLevel = 'error' | 'warn' | 'ignore';
 
 export interface VerifyPkgOptions {
     manifestPath: string;
+    cwd?: string;
     verbose?: boolean;
 }
 
