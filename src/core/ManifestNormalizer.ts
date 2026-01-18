@@ -1,4 +1,4 @@
-import { VerifyPkgManifest, VerifyPkgPolicyLevel } from '../types';
+import { VerifyPkgManifest, VerifyPkgNormalized, VerifyPkgPolicyLevel } from '../types';
 import { resolve } from 'node:path';
 
 export class ManifestNormalizer {
@@ -10,10 +10,10 @@ export class ManifestNormalizer {
     public static normalize (
         manifest: VerifyPkgManifest,
         cwd: string = process.cwd()
-    ) : any {
-        const pkgRoot = resolve( cwd, manifest.context.packageRoot );
+    ) : VerifyPkgNormalized {
+        const packageRoot = resolve( cwd, manifest.context.packageRoot );
 
-        const policy = {
+        const policy: VerifyPkgNormalized[ 'policy' ] = {
             defaultSeverity: this.policyLevel( manifest.policy?.defaultSeverity, 'error' ),
             failOnWarnings: manifest.policy?.failOnWarnings ?? false,
             unexpectedFiles: this.policyLevel( manifest.policy?.unexpectedFiles, 'warn' ),
@@ -23,6 +23,8 @@ export class ManifestNormalizer {
                 deriveFailure: this.policyLevel( manifest.policy?.on?.deriveFailure, 'warn' )
             }
         };
+
+        return { packageRoot, policy };
     }
 
 }
