@@ -1,4 +1,4 @@
-export type VerifyPkgPolicyLevel = 'error' | 'warn' | 'ignore';
+export type VerifyPkgSeverity = 'error' | 'warn' | 'ignore';
 
 export interface VerifyPkgOptions {
     manifestPath: string;
@@ -14,13 +14,13 @@ export interface VerifyPkgManifest {
         packageRoot: string;
     };
     policy: {
-        defaultSeverity: VerifyPkgPolicyLevel;
+        defaultSeverity: VerifyPkgSeverity;
         failOnWarnings?: boolean;
-        unexpectedFiles?: VerifyPkgPolicyLevel;
+        unexpectedFiles?: VerifyPkgSeverity;
         on?: {
-            missingExpected?: VerifyPkgPolicyLevel;
-            emptyPattern?: VerifyPkgPolicyLevel;
-            deriveFailure?: VerifyPkgPolicyLevel;
+            missingExpected?: VerifyPkgSeverity;
+            emptyPattern?: VerifyPkgSeverity;
+            deriveFailure?: VerifyPkgSeverity;
         };
     };
     expect: {
@@ -46,13 +46,13 @@ export interface VerifyPkgManifest {
 export interface VerifyPkgNormalized {
     packageRoot: string;
     policy: {
-        defaultSeverity: VerifyPkgPolicyLevel;
+        defaultSeverity: VerifyPkgSeverity;
         failOnWarnings: boolean;
-        unexpectedFiles: VerifyPkgPolicyLevel;
+        unexpectedFiles: VerifyPkgSeverity;
         on: {
-            missingExpected: VerifyPkgPolicyLevel;
-            emptyPattern: VerifyPkgPolicyLevel;
-            deriveFailure: VerifyPkgPolicyLevel;
+            missingExpected: VerifyPkgSeverity;
+            emptyPattern: VerifyPkgSeverity;
+            deriveFailure: VerifyPkgSeverity;
         };
     };
     expect: {
@@ -75,7 +75,7 @@ export interface VerifyPkgCheckFile {
     relative: string;
     absolute: string;
     exists: boolean;
-    severity?: VerifyPkgPolicyLevel;
+    severity?: VerifyPkgSeverity;
 }
 
 export interface VerifyPkgCheckPattern {

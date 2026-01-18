@@ -1,11 +1,11 @@
-import { VerifyPkgManifest, VerifyPkgNormalized, VerifyPkgPolicyLevel } from '../types';
+import { VerifyPkgManifest, VerifyPkgNormalized, VerifyPkgSeverity } from '../types';
 import { resolve } from 'node:path';
 
 export class ManifestNormalizer {
 
     private static policyLevel (
-        level: any = undefined, fb: VerifyPkgPolicyLevel
-    ) : VerifyPkgPolicyLevel {
+        level: any = undefined, fb: VerifyPkgSeverity
+    ) : VerifyPkgSeverity {
         return [ 'error', 'warn', 'ignore' ].includes(
             ( level = String( level ).toLowerCase() )
         ) ? level : fb;

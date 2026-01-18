@@ -1,4 +1,4 @@
-import { VerifyPkgCheckFile, VerifyPkgNormalized, VerifyPkgPolicyLevel, VerifyPkgResult } from '../types';
+import { VerifyPkgCheckFile, VerifyPkgNormalized, VerifyPkgSeverity, VerifyPkgResult } from '../types';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -36,7 +36,7 @@ export class PackageVerifier {
 
     private applyPolicy (
         result: VerifyPkgResult, exists: boolean,
-        severity: VerifyPkgPolicyLevel
+        severity: VerifyPkgSeverity
     ) : void {
         if ( ! exists && severity === 'error' ) result.summary.errors++;
         if ( ! exists && severity === 'warn' ) result.summary.warnings++;
@@ -44,7 +44,7 @@ export class PackageVerifier {
 
     private async checkFile (
         result: VerifyPkgResult, f: { relative: string; absolute: string },
-        severity: VerifyPkgPolicyLevel
+        severity: VerifyPkgSeverity
     ) : Promise< void > {
         const exists = await this.pathExists( f.absolute );
 
@@ -59,7 +59,7 @@ export class PackageVerifier {
 
     private async checkPattern (
         result: VerifyPkgResult, p: { base: string; pattern: string; regex: RegExp; },
-        severity: VerifyPkgPolicyLevel
+        severity: VerifyPkgSeverity
     ) : Promise< void > {
         const matches = await this.glob( p.base, p.regex );
         const exists = matches.length > 0;
@@ -75,7 +75,7 @@ export class PackageVerifier {
 
     private async checkGroup (
         result: VerifyPkgResult, g: { relative: string; absolute: string }[],
-        severity: VerifyPkgPolicyLevel
+        severity: VerifyPkgSeverity
     ) : Promise< void > {
         const groupResult: VerifyPkgCheckFile[] = [];
         let groupExists = false;
