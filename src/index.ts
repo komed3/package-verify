@@ -1,9 +1,14 @@
 import { ManifestLoader } from './core/ManifestLoader';
 import { ManifestNormalizer } from './core/ManifestNormalizer';
 import { PackageVerifier } from './core/PackageVerifier';
-import { VerifyPkgOptions, VerifyPkgResult } from './types';
+import type * as T from './types';
 
-export default async function verifyPackage ( opt: VerifyPkgOptions ) : Promise< VerifyPkgResult > {
+export { ManifestLoader, ManifestNormalizer, PackageVerifier };
+export type { T };
+
+export default async function verifyPackage (
+    opt: T.VerifyPkgOptions
+) : Promise< T.VerifyPkgResult > {
     const { manifestPath, cwd, verbose = false } = opt;
 
     const manifest = await ManifestLoader.load( manifestPath );
