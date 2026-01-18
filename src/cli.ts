@@ -32,7 +32,7 @@ const applyExitCode = ( result: VerifyPkgResult ) : void => {
 export async function main () : Promise< void > {
     const args = parseArgs( process.argv.slice( 2 ) );
 
-    if ( args.version ) {
+    if ( args.version || args.v ) {
         console.log( VERSION );
         return;
     }
@@ -55,7 +55,8 @@ export async function main () : Promise< void > {
         return;
     }
 
+    printSummary( result );
+
     if ( reportPath ) await writeFile( reportPath, JSON.stringify( result, null, 2 ), 'utf8' );
-    if ( options.verbose ) printSummary( result );
     if ( ! dryRun ) applyExitCode( result );
 }
