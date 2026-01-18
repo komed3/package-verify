@@ -13,6 +13,18 @@ const parseArgs = ( argv: string[] ) => argv.reduce( ( args, a ) => {
     } return args;
 }, {} as Record< string, string | boolean > );
 
+const printSummary = ( result: VerifyPkgResult ) : void => {
+    const { errors, warnings } = result.summary;
+
+    if ( errors === 0 && warnings === 0 ) {
+        console.log( '✔ Package verification passed' );
+        return;
+    }
+
+    if ( errors > 0 ) console.error( `✖ ${errors} error${ errors === 1 ? '' : 's' } found` );
+    if ( warnings > 0 ) console.warn( `⚠ ${warnings} warning${ warnings === 1 ? '' : 's' } found` );
+}
+
 export async function main () : Promise< void > {
     const args = parseArgs( process.argv.slice( 2 ) );
 
@@ -40,4 +52,5 @@ export async function main () : Promise< void > {
     }
 
     if ( reportPath ) await writeFile( reportPath, JSON.stringify( result, null, 2 ), 'utf8' );
+    if ( options.verbose ) printSummary( result );
 }
