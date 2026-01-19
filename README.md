@@ -69,7 +69,7 @@ The file is validated against the official JSON schema:
 schema/package-verify.schema.json
 ```
 
-## Minimal Manifest Example
+Minimal Manifest Example:
 
 ```json
 {
@@ -96,4 +96,41 @@ schema/package-verify.schema.json
     ]
   }
 }
+```
+
+### `expect`
+
+Defines what must exist in the package.
+
+#### `files`
+
+Explicit file paths (relative to `packageRoot`) that must exist.
+
+```json
+"files": [
+  "dist/index.js",
+  "dist/index.d.ts"
+]
+```
+
+#### `patterns`
+
+Glob patterns that must match at least one file.
+
+```json
+"patterns": [
+  "dist/**/*.js",
+  "dist/**/*.d.ts"
+]
+```
+
+#### `atLeastOne`
+
+Groups of alternative files where at least one per group must exist.
+
+```json
+"atLeastOne": [
+  [ "README.md", "README.txt" ],
+  [ "LICENSE", "LICENSE.md" ]
+]
 ```
