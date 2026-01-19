@@ -160,3 +160,36 @@ Groups of alternative files where at least one per group must exist.
   [ "LICENSE", "LICENSE.md" ]
 ]
 ```
+
+### `derive` (optional)
+
+Allows deriving expected targets from source files.
+
+**Typical use case:**  
+verify that build outputs exist for a given source structure.
+
+```json
+"derive": {
+  "sources": {
+    "root": "src",
+    "include": "**/*.ts",
+    "exclude": [ "**/*.test.ts" ]
+  },
+  "rules": [
+    {
+      "match": [ "**/*.ts" ],
+      "mode": "esm"
+    }
+  ],
+  "targets": {
+    "esm": [
+      "dist/**/*.js",
+      "dist/**/*.d.ts"
+    ]
+  }
+}
+```
+
+Source files are identified under `derive.sources.root` according to the specified `include` and `exclude` patterns. Rules are applied to map source files to target groups. Targets, used as templates, define what files must exist for each target group.
+
+If derivation fails, `policy.on.deriveFailure` is applied.
