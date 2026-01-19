@@ -1,11 +1,11 @@
-import { VerifyPkgCheckFile, VerifyPkgNormalized, VerifyPkgSeverity, VerifyPkgResult } from '../types';
+import * as T from '../types';
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 export class PackageVerifier {
 
     constructor (
-        private readonly manifest: VerifyPkgNormalized,
+        private readonly manifest: T.VerifyPkgNormalized,
         private readonly verbose: boolean
     ) {}
 
@@ -33,11 +33,11 @@ export class PackageVerifier {
         if ( this.verbose ) ( console as any )[ method ]( msg );
     }
 
-    private logSeverity ( msg: string, severity: VerifyPkgSeverity ) : void {
+    private logSeverity ( msg: string, severity: T.VerifyPkgSeverity ) : void {
         this.log( msg, severity === 'error' ? 'error' : 'warn' );
     }
 
-    private logCheck ( exists: boolean, msg: string, severity: VerifyPkgSeverity ) : void {
+    private logCheck ( exists: boolean, msg: string, severity: T.VerifyPkgSeverity ) : void {
         this.log( `${ exists ? '[OK]' : '[MISSING]' } ${msg}`,
             exists ? 'log' : severity === 'error' ? 'error' : 'warn'
         );
@@ -49,8 +49,8 @@ export class PackageVerifier {
     }
 
     private applyPolicy (
-        result: VerifyPkgResult, exists: boolean,
-        severity: VerifyPkgSeverity
+        result: T.VerifyPkgResult, exists: boolean,
+        severity: T.VerifyPkgSeverity
     ) : void {
         if ( exists || severity === 'ignore' ) return;
         switch ( severity ) {
@@ -60,8 +60,8 @@ export class PackageVerifier {
     }
 
     private async checkFile (
-        result: VerifyPkgResult, f: { relative: string; absolute: string },
-        severity: VerifyPkgSeverity
+        result: T.VerifyPkgResult, f: { relative: string; absolute: string },
+        severity: T.VerifyPkgSeverity
     ) : Promise< void > {
         const exists = await this.pathExists( f.absolute );
 
@@ -72,8 +72,8 @@ export class PackageVerifier {
     }
 
     private async checkPattern (
-        result: VerifyPkgResult, p: { base: string; pattern: string; regex: RegExp; },
-        severity: VerifyPkgSeverity
+        result: T.VerifyPkgResult, p: { base: string; pattern: string; regex: RegExp; },
+        severity: T.VerifyPkgSeverity
     ) : Promise< void > {
         const matches = ( await this.glob( p.base ) ).filter( f => p.regex.test( f ) );
         const exists = matches.length > 0;
@@ -85,10 +85,10 @@ export class PackageVerifier {
     }
 
     private async checkGroup (
-        result: VerifyPkgResult, g: { relative: string; absolute: string }[],
-        severity: VerifyPkgSeverity
+        result: T.VerifyPkgResult, g: { relative: string; absolute: string }[],
+        severity: T.VerifyPkgSeverity
     ) : Promise< void > {
-        const groupResult: VerifyPkgCheckFile[] = [];
+        const groupResult: T.VerifyPkgCheckFile[] = [];
         let groupExists = false;
 
         for ( const f of g ) {
@@ -104,7 +104,7 @@ export class PackageVerifier {
         this.applyPolicy( result, groupExists, severity );
     }
 
-    private async checkDerive ( result: VerifyPkgResult ) : Promise< void > {
+    private async checkDerive ( result: T.VerifyPkgResult ) : Promise< void > {
         const { packageRoot, policy: { on: { deriveFailure: severity } }, derive } = this.manifest;
         if ( ! derive ) return;
 
@@ -124,7 +124,9 @@ export class PackageVerifier {
         await traverse( sources.root );
 
         for ( const src of sourceFiles ) {
-            const matchingRules = rules.filter( r => Array.isArray( r.match ) && r.match.includes( src ) );
+            const matchingRules = rules.filter(
+                r => Array.isArray( r.match ) && r.match.includes( src )
+            );
 
             if ( matchingRules.length > 1 ) {
                 this.log( `[DERIVE] multiple matching rules for ${src}`, 'error' );
@@ -136,7 +138,9 @@ export class PackageVerifier {
             if ( ! rule ) {
                 const defaults = rules.filter( r => r.default );
                 if ( defaults.length !== 1 ) {
-                    this.logSeverity( `[DERIVE] ${ defaults.length === 0 ? 'no' : 'multiple' } default rule(s) for ${src}`, severity );
+                    this.logSeverity( `[DERIVE] ${ defaults.length === 0 ? 'no' : 'multiple'
+                        } default rule(s) for ${src}`, severity );
+
                     this.applyPolicy( result, false, severity );
                     continue;
                 }
@@ -158,19 +162,19 @@ export class PackageVerifier {
             ];
 
             for ( const tpl of templates ) {
-                const relTarget = this.posix( tpl.replace( '{dir}', dir ).replace( '{name}', name ).replace( '{ext}', ext ) );
-                const absTarget = join( packageRoot, relTarget );
-                const exists = await this.pathExists( absTarget );
+                const rel = this.posix( tpl.replace( '{dir}', dir ).replace( '{name}', name ).replace( '{ext}', ext ) );
+                const abs = join( packageRoot, rel );
+                const exists = await this.pathExists( abs );
 
-                this.logCheck( exists, `(derive: ${mode}) ${relTarget}`, severity );
+                this.logCheck( exists, `(derive: ${mode}) ${rel}`, severity );
 
-                result.derive.push( { mode, target: relTarget, absolute: absTarget, exists } );
+                result.derive.push( { mode, target: rel, absolute: abs, exists } );
                 this.applyPolicy( result, exists, severity );
             }
         }
     }
 
-    private collectAllowedFiles ( result: VerifyPkgResult ) : Set< string > {
+    private collectAllowedFiles ( result: T.VerifyPkgResult ) : Set< string > {
         const allowed: Set< string > = new Set ();
 
         result.files.forEach( f => f.exists && allowed.add( f.relative ) );
@@ -181,7 +185,7 @@ export class PackageVerifier {
         return allowed;
     }
 
-    private async checkUnexpected ( result: VerifyPkgResult ) : Promise< void > {
+    private async checkUnexpected ( result: T.VerifyPkgResult ) : Promise< void > {
         const { packageRoot, policy: { unexpectedFiles: severity } } = this.manifest;
 
         if ( severity === 'ignore' ) return;
@@ -200,18 +204,26 @@ export class PackageVerifier {
         }
     }
 
-    public async verify () : Promise< VerifyPkgResult > {
-        const { policy: { on: { missingExpected, emptyPattern } }, expect } = this.manifest;
-        const result: VerifyPkgResult = {
+    public async verify () : Promise< T.VerifyPkgResult > {
+        const { packageRoot, policy: { on: { missingExpected, emptyPattern } }, expect } = this.manifest;
+        const result: T.VerifyPkgResult = {
             files: [], patterns: [], atLeastOne: [], derive: [], unexpected: [],
             summary: { errors: 0, warnings: 0 }
         };
 
+        this.log( 'Starting package verification ...' );
+        this.log( `Package root: ${packageRoot}` );
+        this.log( `Policy: ${ JSON.stringify( this.manifest.policy, null, 2 ) }` );
+
+        this.log( `Step 1 / 3: Checking expected files, patterns, and groups ...` );
         for ( const f of expect.files ) await this.checkFile( result, f, missingExpected );
         for ( const p of expect.patterns ) await this.checkPattern( result, p, emptyPattern );
         for ( const g of expect.atLeastOne ) await this.checkGroup( result, g, missingExpected );
 
+        this.log( `Step 2 / 3: Checking derived files ...` );
         await this.checkDerive( result );
+
+        this.log( `Step 3 / 3: Checking for unexpected files ...` );
         await this.checkUnexpected( result );
 
         return result;
