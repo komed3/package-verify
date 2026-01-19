@@ -190,6 +190,27 @@ verify that build outputs exist for a given source structure.
 }
 ```
 
-Source files are identified under `derive.sources.root` according to the specified `include` and `exclude` patterns. Rules are applied to map source files to target groups. Targets, used as templates, define what files must exist for each target group.
+Source files are identified under `derive.sources.root` according to the specified `include` and `exclude` patterns.
+Rules are applied to map source files to target groups.
+Targets, used as templates, define what files must exist for each target group.
 
 If derivation fails, `policy.on.deriveFailure` is applied.
+
+## CI Example (GitHub Actions)
+
+```yaml
+- name: Verify package contents
+  run: npx verify-pkg --fail-on-warn
+```
+
+## JSON Report
+
+```bash
+verify-pkg --report=verify-report.json
+```
+
+Writes the full verification result (files, patterns, derive checks, summary) as JSON.
+
+## License
+
+MIT © 2026 komed3 (Paul Köhler)
