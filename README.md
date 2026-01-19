@@ -172,7 +172,7 @@ verify that build outputs exist for a given source structure.
 "derive": {
   "sources": {
     "root": "src",
-    "include": "**/*.ts",
+    "include": "*.ts",
     "exclude": [ "**/*.test.ts" ]
   },
   "rules": [
