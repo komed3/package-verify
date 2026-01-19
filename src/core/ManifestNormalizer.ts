@@ -20,7 +20,7 @@ export class ManifestNormalizer {
     }[] {
         return paths.map( f => ( {
             relative: this.posix( f ),
-            absolute: this.posix( resolve( base, f ) )
+            absolute: resolve( base, f )
         } ) );
     }
 
@@ -63,7 +63,7 @@ export class ManifestNormalizer {
 
         const derive: VerifyPkgNormalized[ 'derive' ] = manifest.derive ? {
             sources: {
-                root: this.posix( resolve( cwd, manifest.derive.sources.root ) ),
+                root: resolve( cwd, manifest.derive.sources.root ),
                 include: this.resolveGlob( manifest.derive.sources.include ),
                 exclude: ( manifest.derive.sources.exclude ?? [] ).map( ex =>
                     this.resolveGlob( ex )
