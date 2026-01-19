@@ -13,7 +13,7 @@ The tool never modifies files and never generates content.
 npm install --save-dev package-verify
 ```
 
-### Basic Usage
+## Basic Usage
 
 ```bash
 npx verify-pkg
