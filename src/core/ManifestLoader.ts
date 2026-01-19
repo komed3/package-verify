@@ -1,13 +1,13 @@
 import { VerifyPkgManifest } from '../types';
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import Ajv from 'ajv';
+import { resolve } from 'node:path';
+import Ajv from 'ajv/dist/2020';
 
 import schema from '../../schema/package-verify.schema.json';
 
 export class ManifestLoader {
 
-    private static readonly ajv = new Ajv ( { allErrors: true, strict: true } );
+    private static readonly ajv = new Ajv ( { allErrors: true, strict: false } );
     private static readonly validate = ManifestLoader.ajv.compile( schema );
 
     public static verify ( manifest: unknown ) : void {
@@ -17,7 +17,7 @@ export class ManifestLoader {
     }
 
     public static async load ( path: string ) : Promise< VerifyPkgManifest > {
-        const raw = await readFile( join( process.cwd(), path ), 'utf8' );
+        const raw = await readFile( resolve( process.cwd(), path ), 'utf8' );
 
         const manifest = JSON.parse( raw );
         this.verify( manifest );
