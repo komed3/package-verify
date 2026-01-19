@@ -9,6 +9,10 @@ export class PackageVerifier {
         private readonly verbose: boolean
     ) {}
 
+    private posix ( path: string ) : string {
+        return path.replace( /\\/g, '/' ).replace( /\/+/g, '/' ).replace( /^\/+/, '' );
+    }
+
     private async glob ( base: string ) : Promise< string[] > {
         const files: string[] = [];
 
@@ -16,7 +20,7 @@ export class PackageVerifier {
             for ( const e of await readdir( dir, { withFileTypes: true } ) ) {
                 const fullPath = join( dir, e.name );
                 e.isDirectory() ? await traverse( fullPath ) : files.push(
-                    relative( base, fullPath )
+                    this.posix( relative( base, fullPath ) )
                 );
             }
         };
@@ -27,6 +31,10 @@ export class PackageVerifier {
 
     private log ( msg: string, method: keyof typeof console = 'log' ) : void {
         if ( this.verbose ) ( console as any )[ method ]( msg );
+    }
+
+    private logSeverity ( msg: string, severity: VerifyPkgSeverity ) : void {
+        this.log( msg, severity === 'error' ? 'error' : 'warn' );
     }
 
     private logCheck ( exists: boolean, msg: string, severity: VerifyPkgSeverity ) : void {
@@ -108,7 +116,7 @@ export class PackageVerifier {
         const traverse = async ( dir: string ) => {
             for ( const e of await readdir( dir, { withFileTypes: true } ) ) {
                 const fullPath = join( dir, e.name );
-                const rel = relative( sources.root, fullPath );
+                const rel = this.posix( relative( sources.root, fullPath ) );
 
                 e.isDirectory() ? await traverse( fullPath ) : includeRegex.test( rel ) &&
                     ! exclude.some( ex => rel === ex || rel.startsWith( ex + '/' ) ) &&
@@ -119,16 +127,29 @@ export class PackageVerifier {
         await traverse( sources.root );
 
         for ( const src of sourceFiles ) {
-            const rule = rules.find( r => r.match?.includes( src ) ) ?? rules.find( r => r.default );
-            if ( ! rule ) {
-                this.log( `[DERIVE] no rule for ${src}`, severity === 'error' ? 'error' : 'warn' );
+            const matchingRules = rules.filter( r => Array.isArray( r.match ) && r.match.includes( src ) );
+
+            if ( matchingRules.length > 1 ) {
+                this.log( `[DERIVE] multiple matching rules for ${src}`, 'error' );
                 this.applyPolicy( result, false, severity );
                 continue;
             }
 
+            let rule = matchingRules[ 0 ];
+            if ( ! rule ) {
+                const defaults = rules.filter( r => r.default );
+                if ( defaults.length !== 1 ) {
+                    this.logSeverity( `[DERIVE] ${ defaults.length === 0 ? 'no' : 'multiple' } default rule(s) for ${src}`, severity );
+                    this.applyPolicy( result, false, severity );
+                    continue;
+                }
+
+                rule = defaults[ 0 ];
+            }
+
             const { mode } = rule, templates = targets[ mode ];
             if ( ! templates ) {
-                this.log( `[DERIVE] no targets for mode "${mode}" (${src})`, 'warn' );
+                this.logSeverity( `[DERIVE] no targets for mode "${mode}" (${src})`, severity );
                 this.applyPolicy( result, false, severity );
                 continue;
             }
@@ -140,7 +161,7 @@ export class PackageVerifier {
             ];
 
             for ( const tpl of templates ) {
-                const relTarget = tpl.replace( '{dir}', dir ).replace( '{name}', name ).replace( '{ext}', ext );
+                const relTarget = this.posix( tpl.replace( '{dir}', dir ).replace( '{name}', name ).replace( '{ext}', ext ) );
                 const absTarget = join( packageRoot, relTarget );
                 const exists = await this.pathExists( absTarget );
 
@@ -155,10 +176,10 @@ export class PackageVerifier {
     private collectAllowedFiles ( result: VerifyPkgResult ) : Set< string > {
         const allowed: Set< string > = new Set ();
 
-        result.files.forEach( f => f.exists && allowed.add( f.relative ) );
-        result.patterns.forEach( p => p.matches.forEach( m => allowed.add( m ) ) );
-        result.atLeastOne.forEach( g => g.group.forEach( f => f.exists && allowed.add( f.relative ) ) );
-        result.derive.forEach( d => d.exists && allowed.add( d.target ) );
+        result.files.forEach( f => f.exists && allowed.add( this.posix( f.relative ) ) );
+        result.patterns.forEach( p => p.matches.forEach( m => allowed.add( this.posix( m ) ) ) );
+        result.atLeastOne.forEach( g => g.group.forEach( f => f.exists && allowed.add( this.posix( f.relative ) ) ) );
+        result.derive.forEach( d => d.exists && allowed.add( this.posix( d.target ) ) );
 
         return allowed;
     }
@@ -175,7 +196,7 @@ export class PackageVerifier {
             if ( allowed.has( f ) ) continue;
             const abs = join( packageRoot, f );
 
-            this.log( `[UNEXPECTED] ${f}`, severity === 'error' ? 'error' : 'warn' );
+            this.logSeverity( `[UNEXPECTED] ${f}`, severity );
 
             result.unexpected.push( { relative: f, absolute: abs, severity } );
             this.applyPolicy( result, false, severity );
