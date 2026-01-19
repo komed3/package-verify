@@ -42,7 +42,7 @@
     }
   },
   "bin": {
-    "verify-pkg": "bin/verifyPkg.js"
+    "verify-pkg": "./bin/verifyPkg.js"
   },
   "engines": {
     "node": ">=18.0.0"
