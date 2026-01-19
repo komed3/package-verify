@@ -42,3 +42,29 @@ Example:
 ```bash
 verify-pkg --verbose --fail-on-warn --report=verify-report.json
 ```
+
+## Exit Codes
+
+| Condition | Exit code |
+| --------- | --------- |
+| No errors (and no warnings if `--fail-on-warn` is set) | `0` |
+| Errors found | `1` |
+| Warnings found with `--fail-on-warn` | `1` |
+
+This behavior makes the tool CI-friendly by default.
+
+## Manifest File
+
+The manifest describes what the package is expected to contain after build.
+
+Default filename:
+
+```bash
+verify.manifest.json
+```
+
+The file is validated against the official JSON schema:
+
+```bash
+schema/package-verify.schema.json
+```
