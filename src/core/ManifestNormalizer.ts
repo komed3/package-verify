@@ -11,10 +11,17 @@ export class ManifestNormalizer {
         ) ? level : fb;
     }
 
+    private static posix ( path: string ) : string {
+        return path.replace( /\\/g, '/' ).replace( /\/+/g, '/' ).replace( /^\/+/, '' );
+    }
+
     private static resolvePaths ( paths: string[], base: string ) : {
         relative: string, absolute: string
     }[] {
-        return paths.map( f => ( { relative: f, absolute: resolve( base, f ) } ) );
+        return paths.map( f => ( {
+            relative: this.posix( f ),
+            absolute: this.posix( resolve( base, f ) )
+        } ) );
     }
 
     private static resolvePattern ( patterns: string[], base: string ) : {

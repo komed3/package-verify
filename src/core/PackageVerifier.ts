@@ -176,10 +176,10 @@ export class PackageVerifier {
     private collectAllowedFiles ( result: VerifyPkgResult ) : Set< string > {
         const allowed: Set< string > = new Set ();
 
-        result.files.forEach( f => f.exists && allowed.add( this.posix( f.relative ) ) );
-        result.patterns.forEach( p => p.matches.forEach( m => allowed.add( this.posix( m ) ) ) );
-        result.atLeastOne.forEach( g => g.group.forEach( f => f.exists && allowed.add( this.posix( f.relative ) ) ) );
-        result.derive.forEach( d => d.exists && allowed.add( this.posix( d.target ) ) );
+        result.files.forEach( f => f.exists && allowed.add( f.relative ) );
+        result.patterns.forEach( p => p.matches.forEach( m => allowed.add( m ) ) );
+        result.atLeastOne.forEach( g => g.group.forEach( f => f.exists && allowed.add( f.relative ) ) );
+        result.derive.forEach( d => d.exists && allowed.add( d.target ) );
 
         return allowed;
     }
