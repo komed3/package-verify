@@ -62,8 +62,8 @@ export interface VerifyPkgNormalized {
     derive?: {
         sources: {
             root: string;
-            include: string;
-            exclude: string[];
+            include: RegExp;
+            exclude: RegExp[];
         };
         rules: { match: string[]; default: boolean; mode: string }[];
         targets: Record< string, string[] >;
