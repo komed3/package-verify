@@ -3,7 +3,7 @@ import type { VerifyPkgOptions, VerifyPkgResult } from './types';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-export const VERSION = 'v1.0.2';
+export const VERSION = 'v1.0.3';
 export const DEFAULT_MANIFEST = 'verify.manifest.json';
 
 const parseArgs = ( argv: string[] ) => argv.reduce( ( args, a ) => {
