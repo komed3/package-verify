@@ -98,6 +98,32 @@ Minimal Manifest Example:
 }
 ```
 
+### `policy`
+
+Controls how violations are classified.
+
+```json
+"policy": {
+  "defaultSeverity": "error",
+  "unexpectedFiles": "warn",
+  "on": {
+    "missingExpected": "error",
+    "emptyPattern": "warn",
+    "deriveFailure": "warn"
+  }
+}
+```
+
+| Field | Meaning |
+| ----- | ------- |
+| `defaultSeverity` | Fallback severity |
+| `unexpectedFiles` | Severity for files not covered by expect |
+| `on.missingExpected` | Missing file from `expect.files` |
+| `on.emptyPattern` | Pattern matched nothing |
+| `on.deriveFailure` | Derivation errors |
+
+Valid severities: `error`, `warn` and `ignore`.
+
 ### `expect`
 
 Defines what must exist in the package.
