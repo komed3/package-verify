@@ -110,17 +110,14 @@ export class PackageVerifier {
 
         const { sources, rules, targets } = derive;
         const sourceFiles: string[] = [];
-        const includeRegex = new RegExp( sources.include );
-        const exclude = sources.exclude ?? [];
 
         const traverse = async ( dir: string ) => {
             for ( const e of await readdir( dir, { withFileTypes: true } ) ) {
                 const fullPath = join( dir, e.name );
                 const rel = this.posix( relative( sources.root, fullPath ) );
 
-                e.isDirectory() ? await traverse( fullPath ) : includeRegex.test( rel ) &&
-                    ! exclude.some( ex => rel === ex || rel.startsWith( ex + '/' ) ) &&
-                    sourceFiles.push( rel );
+                e.isDirectory() ? await traverse( fullPath ) : sources.include.test( rel ) &&
+                    ! sources.exclude.some( ex => ex.test( rel ) ) && sourceFiles.push( rel );
             }
         };
 
