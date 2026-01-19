@@ -24,14 +24,18 @@ export class ManifestNormalizer {
         } ) );
     }
 
+    private static resolveGlob ( glob: string ) : RegExp {
+        return new RegExp(
+            '^' + glob.replace( /[.+^${}()|[\]\\]/g, '\\$&' )
+                .replace( /\*/g, '.*' )
+                .replace( /\?/g, '.' ) + '$'
+        );
+    }
+
     private static resolvePattern ( patterns: string[], base: string ) : {
         base: string, pattern: string, regex: RegExp
     }[] {
-        return patterns.map( p => ( { base, pattern: p, regex: new RegExp(
-            '^' + p.replace( /[.+^${}()|[\]\\]/g, '\\$&' )
-                .replace( /\*/g, '.*' )
-                .replace( /\?/g, '.' ) + '$'
-        ) } ) );
+        return patterns.map( p => ( { base, pattern: p, regex: this.resolveGlob( p ) } ) );
     }
 
     public static normalize (
@@ -59,9 +63,11 @@ export class ManifestNormalizer {
 
         const derive: VerifyPkgNormalized[ 'derive' ] = manifest.derive ? {
             sources: {
-                root: resolve( cwd, manifest.derive.sources.root ),
-                include: manifest.derive.sources.include,
-                exclude: manifest.derive.sources.exclude ?? []
+                root: this.posix( resolve( cwd, manifest.derive.sources.root ) ),
+                include: this.resolveGlob( manifest.derive.sources.include ),
+                exclude: ( manifest.derive.sources.exclude ?? [] ).map( ex =>
+                    this.resolveGlob( ex )
+                )
             },
             rules: manifest.derive.rules.map( r => ( {
                 match: r.match ?? [],
