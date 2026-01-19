@@ -49,6 +49,17 @@ export async function main () : Promise< void > {
     const dryRun = Boolean( args[ 'dry-run' ] );
     const reportPath = args.report ? resolve( String( args.report ) ) : undefined;
 
+    if ( options.verbose ) {
+        console.log( 'Running verify-pkg vers.', VERSION );
+        console.log( '' );
+        console.log( 'Working directory:', options.cwd ?? process.cwd() );
+        console.log( 'Using manifest:', options.manifestPath );
+        if ( options.failOnWarnings ) console.log( 'Failing on warnings is enabled.' );
+        if ( dryRun ) console.log( 'Dry run mode enabled, no exit-code.' );
+        if ( reportPath ) console.log( 'Report will be written to:', reportPath );
+        console.log( '' );
+    }
+
     let result: VerifyPkgResult;
     try { result = await verifyPkg( options ) }
     catch ( err ) {
