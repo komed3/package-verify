@@ -68,3 +68,32 @@ The file is validated against the official JSON schema:
 ```bash
 schema/package-verify.schema.json
 ```
+
+## Minimal Manifest Example
+
+```json
+{
+  "meta": {
+    "manifestVersion": 1
+  },
+  "context": {
+    "packageRoot": "."
+  },
+  "policy": {
+    "defaultSeverity": "error",
+    "unexpectedFiles": "warn",
+    "on": {
+      "missingExpected": "error",
+      "emptyPattern": "warn"
+    }
+  },
+  "expect": {
+    "files": [
+      "dist/index.js",
+      "dist/index.d.ts",
+      "package.json",
+      "README.md"
+    ]
+  }
+}
+```
